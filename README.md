@@ -32,6 +32,11 @@ I believe in mastering fundamentals before moving to advanced topics. Every fold
 * [ ] Web Scraping
 * [ ] End-to-End Data Projects
 
+---
+### 🌐 Connect With Me
+* **LinkedIn:** [linkedin.com/in/ibrahim-waziri](https://www.linkedin.com/in/ibrahim-waziri-b69909293)
+* **Peerlist:** [peerlist.io/worldofwazeer](https://peerlist.io/worldofwazeer)
+
 ## Author
 
 Ibrahim Waziri
