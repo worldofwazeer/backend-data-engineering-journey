@@ -1,11 +1,13 @@
 import logging
 import time
 from typing import Optional
+
 import requests
 from requests.exceptions import (
     HTTPError,
     RequestException,
 )
+
 from config import (
     API_KEY,
     BACKOFF_FACTOR,
@@ -27,14 +29,14 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     datefmt="%d-%b-%y %H:%M:%S",
 )
+
 logger = logging.getLogger("ETL_PRACTICE")
 
 
 class APIClient:
     """
-Reusable HTTP client that provides authentication, retry logic,
-rate limiting, timeout handling, and JSON response validation.
-"""
+    Reusable HTTP client for authenticated API requests with response validation.
+    """
 
     def __init__(self) -> None:
         self.session = requests.Session()
@@ -53,6 +55,7 @@ rate limiting, timeout handling, and JSON response validation.
 
         for attempt in range(max_retries + 1):
             delay = BACKOFF_FACTOR ** attempt
+
             try:
                 response = self.session.get(
                     url,
@@ -62,7 +65,7 @@ rate limiting, timeout handling, and JSON response validation.
 
                 response.raise_for_status()
 
-                # Step 1 & 2: Validate Content-Type Header
+                # Validate the response content type
                 content_type = response.headers.get("Content-Type", "")
                 if "application/json" not in content_type:
                     logger.error(
@@ -73,12 +76,12 @@ rate limiting, timeout handling, and JSON response validation.
                         f"Expected JSON response, got {content_type}"
                     )
 
-                # Step 3: Safely Parse JSON Payload
+                # Safely parse the JSON payload
                 try:
                     payload = response.json()
                     logger.info("GET %s succeeded.", endpoint)
                     return payload
-                except requests.exceptions.JSONDecodeError:
+                except ValueError:
                     logger.error(
                         "Invalid JSON payload received from %s",
                         endpoint,
@@ -120,9 +123,13 @@ rate limiting, timeout handling, and JSON response validation.
 
             if attempt == max_retries:
                 logger.error("Maximum retries exceeded.")
+
                 if last_exception is not None:
                     raise last_exception
-                raise RuntimeError("Maximum retries exceeded with unknown error.")
+
+                raise RuntimeError(
+                    "Maximum retries exceeded with unknown error."
+                )
 
             logger.info(
                 "Retrying in %d second(s)...",
