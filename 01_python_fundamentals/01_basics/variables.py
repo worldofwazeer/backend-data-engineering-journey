@@ -1,36 +1,46 @@
+
 """
-01_Python_Fundamentals - Variables & Type Casting
-
-Demonstrating explicit type hinting, variable naming conventions,
-and safe primitive casting common when parsing raw string data inputs.
+Advanced variable management, scoping, and constant definitions.
+Demonstrates type hinting, unpacking, and namespace hygiene suitable for pipeline configuration.
 """
+import logging
+from typing import Final, Any
 
-# Type Hints
-raw_record_id: int = 10452
-source_api_name: str = "dummy_json_recipes"
-ingestion_rate_limit: float = 25.5
-is_pipeline_active: bool = True
+# Configure basic logging for standard output
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
-print(
-    f"System Log: Ingesting from {source_api_name} "
-    f"(ID: {raw_record_id})"
-)
+# 1. Constants and Type Annotations
+# Using Final prevents reassignment warnings in static type checkers (like mypy)
+PIPELINE_NAME: Final[str] = "Customer_Data_Ingestion"
+MAX_RETRIES: Final[int] = 5
+CONNECTION_TIMEOUT_SEC: Final[float] = 30.5
 
-# Type Casting
-raw_metric_string = "450"
-processed_metric = int(raw_metric_string)
+# 2. Variable Unpacking (Destructuring)
+def demonstrate_unpacking() -> None:
+    """Demonstrates extracting values from data structures efficiently."""
+    # Extracting head and tail from a simulated batch of record IDs
+    record_ids = [101, 102, 103, 104, 105]
+    first_record, *middle_records, last_record = record_ids
 
-raw_price_string = "19.99"
-processed_price = float(raw_price_string)
+    logging.info(f"First ID: {first_record}, Last ID: {last_record}")
+    logging.info(f"Middle batch size: {len(middle_records)}")
 
-print(
-    f"Type Transformation: "
-    f"Converted '{raw_metric_string}' "
-    f"to {type(processed_metric)}"
-)
+# 3. Scope and Namespace Management
+def process_pipeline_config() -> dict[str, Any]:
+    """Demonstrates local scoping shadowing global variables safely."""
+    # Local variable masking a global concept cleanly within scope
+    pipeline_state = "RUNNING"
 
-print(
-    f"Type Transformation: "
-    f"Converted '{raw_price_string}' "
-    f"to {type(processed_price)}"
-)
+    config = {
+        "name": PIPELINE_NAME,
+        "retries": MAX_RETRIES,
+        "state": pipeline_state
+    }
+    return config
+
+if __name__ == "__main__":
+    logging.info("--- Executing Variables Module ---")
+    demonstrate_unpacking()
+
+    active_config = process_pipeline_config()
+    logging.info(f"Active Configuration: {active_config}")
