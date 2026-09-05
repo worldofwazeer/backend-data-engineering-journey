@@ -1,23 +1,49 @@
 """
-01_Python_Fundamentals - Exception Handling
-Demonstrating robust error containment architectures using target block capturing.
+The try / except / else / finally control flow.
+Demonstrates proper resource cleanup and success-only execution paths.
 """
+import logging
 
-raw_payload_data = {"id": 12, "metric": "invalid_numerical_string"}
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
-try:
-    print("Initiating volatile record conversion transformations...")
-    # This will trigger a explicit ValueError since characters cannot be cast to base-10 integers
-    converted_metric = int(raw_payload_data["metric"])
 
-except KeyError as ke:
-    print(f"Data Schema Failure: Target property field was absent in payload: {ke}")
+def execute_database_transaction(payload: dict, force_failure: bool = False) -> None:
+    """
+    Demonstrates the complete exception handling matrix.
+    Ensures a simulated database session is always closed, regardless of success or failure.
+    """
+    session_is_open = True
+    logging.info("Session opened. Attempting transaction...")
 
-except ValueError as ve:
-    print(f"Data Transformation Failure: Data type casting violation captured: {ve}")
+    try:
+        if force_failure:
+            raise ValueError("Malformed payload detected during insert.")
 
-except Exception as general_error:
-    print(f"Critical System Crash: Unmapped top-level error intercepted: {general_error}")
+        # Simulate processing
+        record_id = payload.get("id")
+        logging.info("Processing record: %s", record_id)
 
-finally:
-    print("Pipeline Execution Context Safety Sweep: System state cleared.")
+    except ValueError as e:
+        # Executes ONLY if a ValueError is raised
+        logging.error("Transaction rolled back due to error: %s", e)
+
+    else:
+        # Executes ONLY if the try block succeeds without exceptions
+        logging.info("Transaction committed successfully.")
+
+    finally:
+        # Executes ALWAYS, whether an exception occurred or not.
+        # This is where you release network connections, file handles, or driver instances (Playwright/Selenium).
+        if session_is_open:
+            session_is_open = False
+            logging.info("Session closed and resources released.")
+
+
+if __name__ == "__main__":
+    logging.info("--- Executing Exception Handling Module ---")
+
+    logging.info("\n--- Test 1: Successful Execution ---")
+    execute_database_transaction({"id": "data_001"}, force_failure=False)
+
+    logging.info("\n--- Test 2: Failed Execution ---")
+    execute_database_transaction({"id": "data_002"}, force_failure=True)
