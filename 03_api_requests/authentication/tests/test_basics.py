@@ -8,25 +8,17 @@ def get_items(limit):
     return limit
 
 
-def test_get_items_with_valid_limit():
-    result = get_items(10)
+@pytest.mark.parametrize("limit", [1, 10, 25])
+def test_get_items_accepts_valid_limit(limit):
+    result = get_items(limit)
 
-    assert result == 10
+    assert result == limit
 
 
-def test_get_items_rejects_zero():
+@pytest.mark.parametrize("limit", [0, -1, -2])
+def test_get_items_rejects_invalid_limit(limit):
     with pytest.raises(
         ValueError,
         match="limit must be positive",
     ):
-        get_items(0)
-
-
-def test_get_items_rejects_negative_limit():
-    with pytest.raises(ValueError):
-        get_items(-2)
-
-def test_get_items_accepts_minimum_valid_limit():
-    result = get_items(1)
-
-    assert result == 1
+        get_items(limit)
