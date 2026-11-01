@@ -72,8 +72,13 @@ def extract_page(session: requests.Session, skip: int, limit: int) -> list[dict[
         limit (int): The maximum number of records to retrieve in this request.
 
     Returns:
-        list[dict[str, Any]]: A list of raw product dictionaries. Returns an empty
-        list if the API request fails or times out.
+        list[dict[str, Any]]: The raw product dictionaries for this page. An empty
+        list indicates that the API returned a valid empty page.
+
+    Raises:
+        requests.exceptions.RequestException: If the request fails or the response
+            has an unsuccessful HTTP status.
+        ValueError: If the response is not a JSON object containing a products list.
     """
     try:
         url = "https://dummyjson.com/products"
@@ -90,10 +95,24 @@ def extract_page(session: requests.Session, skip: int, limit: int) -> list[dict[
             params=params
         )
         response.raise_for_status()
-        return response.json().get("products", [])
-    except requests.exceptions.RequestException as e:
-        logger.error(e)
-        return []
+        payload = response.json()
+    except requests.exceptions.RequestException:
+        logger.exception(
+            "Failed to extract product page (skip=%d, limit=%d)", skip, limit
+        )
+        raise
+
+    if not isinstance(payload, dict):
+        raise ValueError("Invalid products response: expected a JSON object.")
+
+    if "products" not in payload:
+        raise ValueError("Invalid products response: missing 'products' field.")
+
+    products = payload["products"]
+    if not isinstance(products, list):
+        raise ValueError("Invalid products response: expected 'products' to be a list.")
+
+    return products
 
 
 def validate_products(raw_products: list[dict[str, Any]]) -> list[Product]:
