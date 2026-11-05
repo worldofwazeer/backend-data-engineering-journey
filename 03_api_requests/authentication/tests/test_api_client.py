@@ -187,3 +187,32 @@ def test_get_forwards_query_parameters():
         )
 
         mock_response.json.assert_called_once_with()
+
+
+def test_api_client_context_manager_closes_session():
+    with patch("api_client.requests.Session") as mock_session:
+
+        client = APIClient()
+
+
+        with client as entered_client:
+
+
+            assert entered_client is client
+
+
+        client.session.close.assert_called_once_with()
+
+
+def test_api_client_context_manager_closes_session_on_exception():
+    with patch("api_client.requests.Session"):
+        client = APIClient()
+
+        with pytest.raises(
+            ValueError,
+            match="Something went wrong",
+        ):
+            with client:
+                raise ValueError("Something went wrong")
+
+        client.session.close.assert_called_once_with()
