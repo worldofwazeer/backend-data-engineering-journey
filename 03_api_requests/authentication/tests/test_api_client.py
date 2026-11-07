@@ -216,3 +216,19 @@ def test_api_client_context_manager_closes_session_on_exception():
                 raise ValueError("Something went wrong")
 
         client.session.close.assert_called_once_with()
+
+
+def test_api_client_sets_authentication_headers():
+    with patch("api_client.requests.Session") as mock_session:
+        with patch("api_client.API_KEY", "test-api-key"):
+
+            client = APIClient()
+
+            mock_session.return_value.headers.update.assert_called_once_with(
+                {
+                    "User-Agent": "WorldOfWazeerDataIngestion/1.0",
+                    "Accept": "application/json",
+                    "X-API-Key": "test-api-key",
+                }
+            )
+
